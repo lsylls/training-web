@@ -14,7 +14,15 @@ import { ProLayout } from "@ant-design/pro-components";
 import { Dropdown, Input, theme } from "antd";
 import React, { useState } from "react";
 import Image from "next/image";
-
+import { usePathname } from "next/navigation";
+import Link from "next/link";
+import GlobalFooter from "@/components/GlobalFooter";
+import "./index.css"
+import {menus} from "../../../config/menu";
+/**
+ * 搜索条
+ * @constructor
+ */
 const SearchInput = () => {
   const { token } = theme.useToken();
   return (
@@ -44,14 +52,8 @@ const SearchInput = () => {
             }}
           />
         }
-        placeholder="搜索方案"
+        placeholder="搜索题目"
         variant="borderless"
-      />
-      <PlusCircleFilled
-        style={{
-          color: token.colorPrimary,
-          fontSize: 24,
-        }}
       />
     </div>
   );
@@ -62,17 +64,7 @@ interface Props {
 }
 
 export default function BasicLayout({ children }: Props) {
-  const [settings, setSetting] = useState<Partial<ProSettings> | undefined>({
-    fixSiderbar: true,
-    layout: "mix",
-    splitMenus: true,
-  });
-
-  const [pathname, setPathname] = useState("/list/sub-page/sub-sub-page1");
-  const [num, setNum] = useState(40);
-  if (typeof document === "undefined") {
-    return <div />;
-  }
+  const pathname = usePathname();
   return (
     <div
       id="basicLayout"
@@ -120,51 +112,38 @@ export default function BasicLayout({ children }: Props) {
         actionsRender={(props) => {
           if (props.isMobile) return [];
           return [
-            props.layout !== "side" && document.body.clientWidth > 1400 ? (
-              <SearchInput />
-            ) : undefined,
-            <InfoCircleFilled key="InfoCircleFilled" />,
-            <QuestionCircleFilled key="QuestionCircleFilled" />,
-            <GithubFilled key="GithubFilled" />,
+            <SearchInput key="search" />,
+            <a
+              key="github"
+              href="https://github.com/lsylls/training-web"
+              target="_blank"
+            >
+              <GithubFilled key="GithubFilled" />
+            </a>,
           ];
         }}
         headerTitleRender={(logo, title, _) => {
-          const defaultDom = (
+          return (
             <a>
               {logo}
               {title}
             </a>
           );
-          if (typeof window === "undefined") return defaultDom;
-          if (document.body.clientWidth < 1400) {
-            return defaultDom;
-          }
-          if (_.isMobile) return defaultDom;
-          return <>{defaultDom}</>;
         }}
-        menuFooterRender={(props) => {
-          if (props?.collapsed) return undefined;
-          return (
-            <div
-              style={{
-                textAlign: "center",
-                paddingBlockStart: 12,
-              }}
-            >
-              <div>© 2021 Made with love</div>
-              <div>by Ant Design</div>
-            </div>
-          );
+        // 渲染底部栏
+        footerRender={() => {
+          return <GlobalFooter />;
         }}
         onMenuHeaderClick={(e) => console.log(e)}
+        //定义有哪些菜单
+        menuDataRender={() => {
+          return menus;
+        }}
+        // 定义菜单项如何渲染
         menuItemRender={(item, dom) => (
-          <div
-            onClick={() => {
-              setPathname(item.path || "/welcome");
-            }}
-          >
+          <Link href={item.path || "/"} target={item.target}>
             {dom}
-          </div>
+          </Link>
         )}
       >
         {children}
